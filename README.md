@@ -284,6 +284,35 @@ git push -u origin main
 
 ---
 
+## 🌐 Deploying to Vercel
+
+This repository is pre-configured for 1-click deployment on Vercel via [`vercel.json`](file:///c:/Headless%20Media%20SDK/vercel.json).
+
+### Option 1: Vercel Dashboard (Recommended)
+
+1. Go to [Vercel Dashboard](https://vercel.com/new) and import your GitHub repository (`Sangram10c/Headless-Media-SDK`).
+2. Vercel will automatically detect the settings from `vercel.json`:
+   - **Framework Preset**: `Vite`
+   - **Build Command**: `pnpm build`
+   - **Output Directory**: `apps/web-app/dist`
+3. Under **Environment Variables**, add:
+   - `VITE_PEXELS_API_KEY`: Your Pexels API Key
+4. Click **Deploy**! 🚀
+
+---
+
+### Option 2: Vercel CLI
+
+```bash
+# Install Vercel CLI globally
+npm i -g vercel
+
+# Deploy project
+vercel
+```
+
+---
+
 ## 📚 Additional Documentation
 
 - 📐 [Architecture Specification](./docs/Architecture.md)
