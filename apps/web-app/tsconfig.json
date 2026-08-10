@@ -5,11 +5,11 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@headless-media/core": ["../../packages/media-core/dist/index.d.ts"],
-      "@headless-media/react": ["../../packages/media-react/dist/index.d.ts"],
-      "@headless-media/ui-react": ["../../packages/media-ui-react/dist/index.d.ts"],
-      "@headless-media/native": ["../../packages/media-native/dist/index.d.ts"],
-      "@headless-media/ui-native": ["../../packages/media-ui-native/dist/index.d.ts"]
+      "@headless-media/core": ["../../packages/media-core/src/index.ts"],
+      "@headless-media/react": ["../../packages/media-react/src/index.ts"],
+      "@headless-media/ui-react": ["../../packages/media-ui-react/src/index.ts"],
+      "@headless-media/native": ["../../packages/media-native/src/index.ts"],
+      "@headless-media/ui-native": ["../../packages/media-ui-native/src/index.ts"]
     }
   },
   "include": ["src"]
