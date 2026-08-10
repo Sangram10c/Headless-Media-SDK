@@ -215,6 +215,7 @@ export function PhotoLightboxModal({ lightbox, photos, onDownload }: PhotoLightb
               src={currentPhoto.src.large2x || currentPhoto.src.large || currentPhoto.src.original}
               alt={currentPhoto.alt || `Photo by ${currentPhoto.photographer}`}
               className="pin-detail-img"
+              referrerPolicy="no-referrer"
             />
 
             <div className="pin-media-floating-left">
@@ -435,6 +436,7 @@ export function PhotoLightboxModal({ lightbox, photos, onDownload }: PhotoLightb
                       alt={photo.alt || `Photo by ${photo.photographer}`}
                       className="pin-img"
                       style={{ aspectRatio: `${photo.width / photo.height}` }}
+                      referrerPolicy="no-referrer"
                     />
                     <div className="pin-overlay">
                       <div className="pin-bottom-info">

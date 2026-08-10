@@ -174,6 +174,7 @@ export function PhotoGrid({ onOpenApiKeyModal }: PhotoGridProps) {
                     alt={gi.item.alt || `Photo by ${gi.item.photographer}`}
                     className="pin-img"
                     loading="lazy"
+                    referrerPolicy="no-referrer"
                   />
 
                   {/* Card Hover Action Bar & Info */}
