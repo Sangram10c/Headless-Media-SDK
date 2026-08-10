@@ -1,4 +1,4 @@
-import { type PexelsPhoto, type PexelsVideo } from '@headless-media/core';
+import { type PexelsPhoto, type PexelsVideo, type VideoFile } from '@headless-media/core';
 import { type LightboxItem } from '@headless-media/ui-react';
 
 /**
@@ -18,8 +18,8 @@ export function photoToLightboxItem(photo: PexelsPhoto): LightboxItem {
  */
 export function getVideoSource(video: PexelsVideo): string {
   const mp4File =
-    video.video_files.find((f) => f.file_type === 'video/mp4' && f.quality === 'hd') ||
-    video.video_files.find((f) => f.file_type === 'video/mp4' && f.quality === 'sd') ||
+    video.video_files.find((f: VideoFile) => f.file_type === 'video/mp4' && f.quality === 'hd') ||
+    video.video_files.find((f: VideoFile) => f.file_type === 'video/mp4' && f.quality === 'sd') ||
     video.video_files[0];
   return mp4File?.link ?? '';
 }

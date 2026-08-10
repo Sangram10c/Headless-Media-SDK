@@ -18,7 +18,7 @@ import {
   Send,
   Sparkles,
 } from 'lucide-react';
-import { useMedia, type PexelsPhoto } from '@headless-media/react';
+import { useMedia, type PexelsPhoto, type PaginatedResponse } from '@headless-media/react';
 import { type UseLightboxReturn } from '@headless-media/ui-react';
 import { triggerFileDownload } from '../utils/media-adapters';
 import { useFavorites } from '../context/FavoritesContext';
@@ -92,8 +92,8 @@ export function PhotoLightboxModal({ lightbox, photos, onDownload }: PhotoLightb
     setLoadingRelated(true);
     client
       .searchPhotos({ query: keyword, per_page: 9 })
-      .then((res) => {
-        const filtered = res.data.filter((p) => p.id !== currentPhoto.id);
+      .then((res: PaginatedResponse<PexelsPhoto>) => {
+        const filtered = res.data.filter((p: PexelsPhoto) => p.id !== currentPhoto.id);
         if (filtered.length > 0) {
           setRelatedPhotos(filtered);
         } else {

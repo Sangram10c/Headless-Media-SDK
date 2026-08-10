@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { Heart, Share2, Download, RefreshCw, ImageOff } from 'lucide-react';
 import { useSearch, useCurated, useDownload, type PexelsPhoto } from '@headless-media/react';
 import type { Orientation } from '@headless-media/core';
-import { useLightbox, useGrid } from '@headless-media/ui-react';
+import { useLightbox, useGrid, type GridItem } from '@headless-media/ui-react';
 import { SearchBar } from './SearchBar';
 import { PhotoLightboxModal } from './PhotoLightboxModal';
 import { photoToLightboxItem, triggerFileDownload } from '../utils/media-adapters';
@@ -164,7 +164,7 @@ export function PhotoGrid({ onOpenApiKeyModal }: PhotoGridProps) {
       {/* Pinterest-style Column Masonry Grid */}
       {activeResult.status !== 'loading' && photos.length > 0 && (
         <div {...getGridProps({ className: 'photo-masonry' })}>
-          {gridItems.map((gi) => {
+          {gridItems.map((gi: GridItem<PexelsPhoto>) => {
             const isFav = favoritePhotoIds.has(gi.item.id);
             return (
               <div {...getItemProps(gi, { className: 'masonry-item' })} key={gi.key}>
