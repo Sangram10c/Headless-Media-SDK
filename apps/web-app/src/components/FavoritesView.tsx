@@ -17,6 +17,7 @@ import {
   VolumeX,
 } from 'lucide-react';
 import type { PexelsPhoto, PexelsVideo } from '@headless-media/react';
+import type { VideoFile } from '@headless-media/core';
 import { useLightbox } from '@headless-media/ui-react';
 import { useFavorites } from '../context/FavoritesContext';
 import { PhotoLightboxModal } from './PhotoLightboxModal';
@@ -80,7 +81,7 @@ export function FavoritesView({ onNavigateToTab }: FavoritesViewProps) {
 
   const handleDownloadVideo = async (e: React.MouseEvent, video: PexelsVideo) => {
     e.stopPropagation();
-    const hdFile = video.video_files.find((f) => f.quality === 'hd') || video.video_files[0];
+    const hdFile = video.video_files.find((f: VideoFile) => f.quality === 'hd') || video.video_files[0];
     if (hdFile?.link) {
       await triggerFileDownload(hdFile.link, `pexels-fav-video-${video.id}.mp4`);
     }
@@ -398,7 +399,7 @@ function FavVideoLightboxModal({ lightbox, videos }: { readonly lightbox: Return
     if (!currentVideo || downloading) return;
     setDownloading(true);
     try {
-      const hdFile = currentVideo.video_files.find((f) => f.quality === 'hd') || currentVideo.video_files[0];
+      const hdFile = currentVideo.video_files.find((f: VideoFile) => f.quality === 'hd') || currentVideo.video_files[0];
       if (hdFile?.link) {
         await triggerFileDownload(hdFile.link, `pexels-fav-video-${currentVideo.id}.mp4`);
       }

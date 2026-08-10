@@ -47,8 +47,8 @@ export function PhotoGrid({ onOpenApiKeyModal }: PhotoGridProps) {
     items: photos,
     columns: 5,
     gap: 16,
-    getItemKey: (p) => p.id,
-    onItemClick: (_, index) => lightbox.open(index),
+    getItemKey: (p: PexelsPhoto) => p.id,
+    onItemClick: (_: PexelsPhoto, index: number) => lightbox.open(index),
   });
 
   const sentinelRef = useInfiniteScroll({

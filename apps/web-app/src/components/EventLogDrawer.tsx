@@ -69,5 +69,7 @@ function renderEventPayload(ev: MediaEvent): string {
       return `key: ${ev.key}`;
     case 'error':
       return `error: ${ev.error.message}`;
+    default:
+      return '';
   }
 }
