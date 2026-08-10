@@ -16,8 +16,9 @@ import {
   Check,
   Loader2,
 } from 'lucide-react';
-import { useMedia, type PexelsVideo } from '@headless-media/react';
-import { useLightbox, useGrid } from '@headless-media/ui-react';
+import { useMedia, type PexelsVideo, type PaginatedResponse } from '@headless-media/react';
+import type { VideoFile } from '@headless-media/core';
+import { useLightbox, useGrid, type GridItem } from '@headless-media/ui-react';
 import { useInfiniteScroll } from '../hooks/use-infinite-scroll';
 import { getVideoSource, triggerFileDownload } from '../utils/media-adapters';
 import { useFavorites } from '../context/FavoritesContext';
@@ -84,8 +85,8 @@ export function VideoReels() {
     items: videos,
     columns: 5,
     gap: 16,
-    getItemKey: (v) => v.id,
-    onItemClick: (_, index) => lightbox.open(index),
+    getItemKey: (v: PexelsVideo) => v.id,
+    onItemClick: (_: PexelsVideo, index: number) => lightbox.open(index),
   });
 
   // Fetch videos for a target topic/query
@@ -157,7 +158,7 @@ export function VideoReels() {
         per_page: 15,
         page: nextPage,
       })
-      .then((res) => {
+      .then((res: PaginatedResponse<PexelsVideo>) => {
         if (res.data.length > 0) {
           setVideos((prev) => [...prev, ...res.data]);
           setPage(nextPage);
@@ -182,7 +183,7 @@ export function VideoReels() {
 
   const handleDirectDownload = async (e: React.MouseEvent, video: PexelsVideo) => {
     e.stopPropagation();
-    const hdFile = video.video_files.find((f) => f.quality === 'hd') || video.video_files[0];
+    const hdFile = video.video_files.find((f: VideoFile) => f.quality === 'hd') || video.video_files[0];
     if (hdFile?.link) {
       client.download(hdFile.link);
       await triggerFileDownload(hdFile.link, `pexels-video-${video.id}.mp4`);
@@ -316,7 +317,7 @@ export function VideoReels() {
       {/* Pinterest Video Masonry Grid */}
       {!loading && videos.length > 0 && (
         <div {...getGridProps({ className: 'photo-masonry' })}>
-          {gridItems.map((gi, index) => {
+          {gridItems.map((gi: GridItem<PexelsVideo>, index: number) => {
             const isFav = favoriteVideoIds.has(gi.item.id);
             const aspectRatio = getDynamicAspectRatio(index, gi.item.width, gi.item.height);
             return (
@@ -498,7 +499,7 @@ function VideoLightboxModal({ lightbox, videos }: { readonly lightbox: ReturnTyp
     setDownloaded(false);
 
     try {
-      const hdFile = currentVideo.video_files.find((f) => f.quality === 'hd') || currentVideo.video_files[0];
+      const hdFile = currentVideo.video_files.find((f: VideoFile) => f.quality === 'hd') || currentVideo.video_files[0];
       if (hdFile?.link) {
         await triggerFileDownload(hdFile.link, `pexels-video-${currentVideo.id}.mp4`);
       }

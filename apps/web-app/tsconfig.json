@@ -2,8 +2,15 @@
   "extends": "@headless-media/typescript-config/react.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src",
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@headless-media/core": ["../../packages/media-core/dist/index.d.ts"],
+      "@headless-media/react": ["../../packages/media-react/dist/index.d.ts"],
+      "@headless-media/ui-react": ["../../packages/media-ui-react/dist/index.d.ts"],
+      "@headless-media/native": ["../../packages/media-native/dist/index.d.ts"],
+      "@headless-media/ui-native": ["../../packages/media-ui-native/dist/index.d.ts"]
+    }
   },
   "include": ["src"]
 }
