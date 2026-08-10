@@ -18,6 +18,8 @@ export default defineConfig({
     open: true,
   },
   build: {
+    outDir: path.resolve(__dirname, '../../dist'),
+    emptyOutDir: true,
     sourcemap: true,
   },
 });
