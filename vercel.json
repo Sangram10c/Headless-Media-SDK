@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "buildCommand": "pnpm build && node -e \"require('fs').cpSync('apps/web-app/dist', 'dist', {recursive: true})\"",
+  "buildCommand": "pnpm build",
   "outputDirectory": "dist"
 }
