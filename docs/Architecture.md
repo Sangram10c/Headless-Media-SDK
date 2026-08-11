@@ -1,75 +1,107 @@
-# Architecture Specification — Headless Media SDK
+# Architecture & System Design
 
-## Executive Summary
-
-The Headless Media SDK ecosystem is designed as an open-source, multi-package monorepo managed with **TurboRepo** and **pnpm**. It provides a framework-agnostic core (`@headless-media/core`), React bindings (`@headless-media/react`), React Native bindings (`@headless-media/native`), and headless UI primitive component libraries (`@headless-media/ui-react`, `@headless-media/ui-native`).
+The **Headless Media SDK** is engineered around the **Headless UI / Engine** pattern. The core execution engine is decoupled from React rendering, allowing shared caching, deduplication, telemetry, and retry mechanics across Web and Mobile.
 
 ---
 
-## Dependency Topology & Boundaries
+## Architectural Principles
+
+1. **Strict Separation of Concerns**: `@headless-media/core` has zero React or DOM dependencies.
+2. **Nominal Type Safety**: Critical strings (API keys, Photo IDs, Video IDs) are branded types (`ApiKey`, `PhotoId`, `VideoId`) preventing string swapping bugs.
+3. **Layered Cache & Deduplication**: Outgoing HTTP requests pass through an in-memory LRU cache (`MemoryCache`) and in-flight request deduplicator (`Deduplicator`).
+4. **Resilience Engineering**: All network requests pass through `withRetry` implementing exponential backoff with full randomized jitter.
+5. **Telemetry & Event Bus**: Every action emits structured events (`search`, `view`, `download`, `cache-hit`, `cache-miss`, `error`).
+
+---
+
+## High-Level Component Architecture Diagram
 
 ```mermaid
 graph TD
-    App["apps/web-app"] --> MR["@headless-media/react"]
-    App --> UIR["@headless-media/ui-react"]
-    MR --> MC["@headless-media/core"]
-    MN["@headless-media/native"] --> MC
-    UIN["@headless-media/ui-native"] -.-> |"same contract"| UIR
-
-    style MC fill:#1a1a2e,stroke:#e94560,color:#fff
-    style MR fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style UIR fill:#1a1a2e,stroke:#16213e,color:#fff
-    style App fill:#0f3460,stroke:#e94560,color:#fff
-    style MN fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style UIN fill:#1a1a2e,stroke:#16213e,color:#fff
+    App[Consumer App / web-app] --> UIReact[@headless-media/ui-react]
+    App --> ReactPkg[@headless-media/react]
+    
+    ReactNativeApp[Mobile App] --> UINative[@headless-media/ui-native]
+    ReactNativeApp --> NativePkg[@headless-media/native]
+    
+    ReactPkg --> Core[@headless-media/core]
+    NativePkg --> Core
+    UIReact --> Core
+    UINative --> Core
+    
+    subgraph Core SDK Infrastructure
+        Core --> MediaClient[MediaClient]
+        MediaClient --> Cache[MemoryCache LRU]
+        MediaClient --> Dedup[Request Deduplicator]
+        MediaClient --> Retry[Exponential Backoff + Jitter]
+        MediaClient --> Bus[MediaEventEmitter]
+    end
+    
+    MediaClient --> PexelsAPI[Pexels REST API]
 ```
-
-### Strict Architectural Boundaries
-
-- **`@headless-media/core`**: 100% Pure TypeScript. NO DOM, NO React, NO React Native imports.
-- **`@headless-media/ui-react`**: Pure Headless UI. NO API calls, NO SDK imports (`@headless-media/core`), NO CSS/Tailwind. Behavior & accessibility only.
-- **`apps/web-app`**: The application is the ONLY place that imports both `@headless-media/react` (for data/events) and `@headless-media/ui-react` (for presentation) and composes them together.
 
 ---
 
-## Data Flow Sequence
+## Layered Package Breakdown
+
+```
++-----------------------------------------------------------------------+
+|                       web-app / Consumer Application                  |
++-----------------------------------------------------------------------+
+|  @headless-media/ui-react           |  @headless-media/ui-native     |
+|  (useGrid, useLightbox, useReel)    |  (Native prop getters)         |
++-------------------------------------+---------------------------------+
+|  @headless-media/react              |  @headless-media/native        |
+|  (MediaProvider, useSearch, etc.)   |  (RN MediaProvider & hooks)    |
++-----------------------------------------------------------------------+
+|                    @headless-media/core                               |
+|  (MediaClient, MemoryCache, Deduplicator, withRetry, EventEmitter)    |
++-----------------------------------------------------------------------+
+|                    Pexels API (https://api.pexels.com/v1)              |
++-----------------------------------------------------------------------+
+```
+
+---
+
+## Dependency Graph
 
 ```mermaid
-sequenceDiagram
-    participant App as Web App
-    participant UIR as @headless-media/ui-react
-    participant MR as @headless-media/react
-    participant MC as @headless-media/core
-    participant API as Pexels API
+classDiagram
+    class MediaClientConfig {
+        +ApiKey apiKey
+        +CacheConfig cache
+        +RetryConfig retry
+    }
 
-    App->>MR: useSearch("nature")
-    MR->>MC: client.searchPhotos({ query: "nature" })
-    MC->>MC: Check MemoryCache (TTL)
-    alt Cache Hit
-        MC-->>MR: Return cached PaginatedResponse
-        MC-->>MC: Emit "cache-hit" event
-    else Cache Miss
-        MC-->>MC: Check Deduplicator (in-flight)
-        alt In-flight request exists
-            MC-->>MR: Attach to existing Promise
-        else Make Request
-            MC->>API: GET /v1/search?query=nature
-            API-->>MC: Pexels JSON
-            MC->>MC: Normalize & store in MemoryCache
-            MC-->>MC: Emit "cache-miss" event
-            MC-->>MR: Return normalized response
-        end
-    end
-    MR-->>App: { data, status: "success", fetchNextPage }
-    App->>UIR: useGrid({ items: data })
-    UIR-->>App: { gridItems, getGridProps, getItemProps }
+    class MediaClient {
+        +searchPhotos()
+        +getCuratedPhotos()
+        +getPhotoById()
+        +searchVideos()
+        +getPopularVideos()
+        +getVideoById()
+        +destroy()
+    }
+
+    class MemoryCache {
+        +get(key)
+        +set(key, value)
+        +delete(key)
+        +clear()
+    }
+
+    class Deduplicator {
+        +dedupe(key, factory)
+        +clear()
+    }
+
+    class MediaEventEmitter {
+        +on(type, handler)
+        +emit(event)
+    }
+
+    MediaClientConfig --> MediaClient
+    MediaClient *-- MemoryCache
+    MediaClient *-- Deduplicator
+    MediaClient *-- MediaEventEmitter
 ```
-
----
-
-## Core Design Patterns
-
-1. **Observer Pattern**: `MediaEventEmitter` allows subscribers to listen to SDK activity (`search`, `view`, `download`, `cache-hit`, `cache-miss`, `error`).
-2. **Prop-Getters Pattern**: Headless UI packages expose functions (`getGridProps`, `getItemProps`, `getBackdropProps`) that return merged DOM props and ARIA attributes without imposing visual styles.
-3. **Linked AbortController**: Per-request cancellation linked to global SDK cleanup signal for memory-leak prevention.
-4. **Branded Types**: Nominal type system (`ApiKey`, `PhotoId`, `VideoId`) preventing structural interchange errors.
