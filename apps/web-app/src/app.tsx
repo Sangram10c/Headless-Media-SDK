@@ -67,7 +67,7 @@ export function App() {
   // Construct SDK Config dynamically based on API key
   const sdkConfig = useMemo<MediaClientConfig>(() => {
     return {
-      apiKey: createApiKey(apiKey),
+      apiKey: createApiKey(apiKey || 'UNCONFIGURED_PEXELS_API_KEY'),
       cache: { ttl: 5 * 60 * 1000, maxEntries: 100 },
       retry: { maxRetries: 3, baseDelay: 1000, maxDelay: 8000, jitter: true },
       logger: false, // Logged via custom subscriber below
