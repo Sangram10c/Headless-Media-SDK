@@ -1,12 +1,14 @@
 {
-    "name": "headless-media-sdk-docs",
-    "private": true,
-    "scripts": {
-        "dev": "vitepress dev .",
-        "build": "vitepress build .",
-        "preview": "vitepress preview ."
-    },
-    "devDependencies": {
-        "vitepress": "^1.5.0"
-    }
+  "name": "headless-media-sdk-docs",
+  "private": true,
+  "scripts": {
+    "dev": "vitepress dev .",
+    "build": "vitepress build .",
+    "docs:build": "vitepress build .",
+    "build-storybook": "vitepress build .",
+    "preview": "vitepress preview ."
+  },
+  "devDependencies": {
+    "vitepress": "^1.5.0"
+  }
 }
