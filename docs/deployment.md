@@ -20,7 +20,7 @@ The reference web application is configured with `apps/web-app/vercel.json` and 
 
 Add the following environment variable in the Vercel Dashboard:
 
-```env
+```bash
 VITE_PEXELS_API_KEY=your_pexels_api_key_here
 ```
 
