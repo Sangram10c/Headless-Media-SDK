@@ -9,7 +9,7 @@ const MOCK_ITEMS = [
 ];
 
 function LightboxDemo({
-  initialOpen = true,
+  initialOpen = false,
   loop = true,
 }: {
   initialOpen?: boolean;
@@ -21,8 +21,10 @@ function LightboxDemo({
     loop,
   });
 
+  const isOpen = lightbox.isOpen || initialOpen;
+
   return (
-    <div style={{ padding: 24 }}>
+    <div style={{ padding: 24, minHeight: isOpen ? 520 : 'auto', position: 'relative' }}>
       <button
         onClick={() => lightbox.open(0)}
         style={{ padding: '10px 18px', background: '#8b5cf6', color: '#fff', border: 'none', borderRadius: 20, cursor: 'pointer', fontWeight: 600 }}
@@ -30,25 +32,29 @@ function LightboxDemo({
         Open Lightbox Modal
       </button>
 
-      {(initialOpen || lightbox.isOpen) && (
-        <div {...lightbox.getBackdropProps({ style: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 } })}>
-          <div {...lightbox.getContentProps({ style: { position: 'relative', maxWidth: 700, width: '90%' } })}>
-            <div style={{ position: 'absolute', top: -40, right: 0, display: 'flex', gap: 8 }}>
-              <button {...lightbox.getCloseButtonProps({ style: { background: 'none', border: 'none', color: '#fff', fontSize: 20, cursor: 'pointer' } })}>
+      {isOpen && (
+        <div {...lightbox.getBackdropProps({ style: { position: 'absolute', inset: 0, background: 'rgba(10,10,12,0.92)', backdropFilter: 'blur(16px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 24, borderRadius: 16 } })}>
+          <div {...lightbox.getContentProps({ style: { position: 'relative', maxWidth: 680, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' } })}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+              <button {...lightbox.getCloseButtonProps({ style: { background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', width: 32, height: 32, borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' } })}>
                 ✕
               </button>
             </div>
 
-            <img src={lightbox.currentItem?.src} alt={lightbox.currentItem?.alt} style={{ width: '100%', borderRadius: 16, objectFit: 'contain' }} />
+            <img
+              src={lightbox.currentItem?.src}
+              alt={lightbox.currentItem?.alt}
+              style={{ maxWidth: '100%', maxHeight: 380, borderRadius: 16, objectFit: 'contain', boxShadow: '0 20px 40px rgba(0,0,0,0.8)' }}
+            />
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
-              <button onClick={lightbox.prev} style={{ padding: '8px 16px', background: '#27272a', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginTop: 14 }}>
+              <button onClick={lightbox.prev} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: 20, cursor: 'pointer', fontWeight: 600 }}>
                 ← Prev
               </button>
-              <span style={{ color: '#a1a1aa', fontSize: 14 }}>
+              <span style={{ color: '#a1a1aa', fontSize: 14, fontWeight: 600 }}>
                 {lightbox.currentIndex + 1} / {MOCK_ITEMS.length}
               </span>
-              <button onClick={lightbox.next} style={{ padding: '8px 16px', background: '#27272a', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' }}>
+              <button onClick={lightbox.next} style={{ padding: '8px 16px', background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: 20, cursor: 'pointer', fontWeight: 600 }}>
                 Next →
               </button>
             </div>
@@ -59,25 +65,55 @@ function LightboxDemo({
   );
 }
 
+const LIGHTBOX_SOURCE = `import { useLightbox } from '@headless-media/ui-react';
+
+function LightboxExample({ items }) {
+  const lightbox = useLightbox({
+    items,
+    initialIndex: 0,
+    loop: true,
+  });
+
+  return (
+    <div>
+      <button onClick={() => lightbox.open(0)}>Open Lightbox</button>
+
+      {lightbox.isOpen && (
+        <div {...lightbox.getBackdropProps()}>
+          <div {...lightbox.getContentProps()}>
+            <button {...lightbox.getCloseButtonProps()}>✕</button>
+            <img src={lightbox.currentItem?.src} alt={lightbox.currentItem?.alt} />
+            <button onClick={lightbox.prev}>Prev</button>
+            <button onClick={lightbox.next}>Next</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}`;
+
 const meta: Meta<typeof LightboxDemo> = {
   title: 'Headless UI/Lightbox',
   component: LightboxDemo,
   tags: ['autodocs'],
+  parameters: {
+    docs: {
+      source: {
+        code: LIGHTBOX_SOURCE,
+        language: 'tsx',
+        type: 'code',
+      },
+    },
+  },
 };
 
 export default meta;
 type Story = StoryObj<typeof LightboxDemo>;
 
 export const Default: Story = {
-  args: {
-    initialOpen: false,
-    loop: true,
-  },
+  args: { initialOpen: false, loop: true },
 };
 
 export const OpenModal: Story = {
-  args: {
-    initialOpen: true,
-    loop: true,
-  },
+  args: { initialOpen: true, loop: true },
 };
