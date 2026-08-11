@@ -1,21 +1,40 @@
 import React, { useState } from 'react';
-import { Key, Trash2, Check, ExternalLink } from 'lucide-react';
+import { Key, Trash2, Check, ExternalLink, AlertTriangle, Loader2 } from 'lucide-react';
 
 interface ApiKeyModalProps {
   readonly currentKey: string;
-  readonly onSave: (key: string) => void;
+  readonly errorMessage?: string | null;
+  readonly onSave: (key: string) => Promise<boolean> | boolean;
   readonly onRemove: () => void;
   readonly onClose: () => void;
 }
 
-export function ApiKeyModal({ currentKey, onSave, onRemove, onClose }: ApiKeyModalProps) {
+export function ApiKeyModal({ currentKey, errorMessage, onSave, onRemove, onClose }: ApiKeyModalProps) {
   const [inputKey, setInputKey] = useState(currentKey);
+  const [isValidating, setIsValidating] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const activeError = localError || errorMessage;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputKey.trim()) {
-      onSave(inputKey.trim());
-      onClose();
+    const keyToTest = inputKey.trim();
+    if (!keyToTest || isValidating) return;
+
+    setIsValidating(true);
+    setLocalError(null);
+
+    try {
+      const isValid = await onSave(keyToTest);
+      if (isValid) {
+        onClose();
+      } else {
+        setLocalError('Invalid Pexels API Key. Authentication failed. Please enter a valid API key.');
+      }
+    } catch {
+      setLocalError('Unable to validate API key. Please check your network connection.');
+    } finally {
+      setIsValidating(false);
     }
   };
 
@@ -35,11 +54,30 @@ export function ApiKeyModal({ currentKey, onSave, onRemove, onClose }: ApiKeyMod
           <h2 className="modal-title" style={{ margin: 0 }}>Manage Pexels API Key</h2>
         </div>
 
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.25rem', lineHeight: 1.5 }}>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1rem', lineHeight: 1.5 }}>
           {currentKey
             ? 'Your Pexels API key is active. You can update it or remove it anytime below.'
             : 'Enter your Pexels API key to power the Headless Media SDK feed. Your key is kept secure in local storage.'}
         </p>
+
+        {activeError && (
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.12)',
+            border: '1px solid rgba(239, 68, 68, 0.35)',
+            color: '#f87171',
+            padding: '0.75rem 1rem',
+            borderRadius: 'var(--radius-md)',
+            fontSize: '0.82rem',
+            marginBottom: '1.25rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            fontWeight: 500
+          }}>
+            <AlertTriangle size={18} style={{ flexShrink: 0, color: '#f87171' }} />
+            <span>{activeError}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
@@ -50,9 +88,13 @@ export function ApiKeyModal({ currentKey, onSave, onRemove, onClose }: ApiKeyMod
               type="password"
               className="search-input"
               style={{ paddingLeft: '1rem' }}
-              placeholder="Paste your Pexels API Key here..."
+              placeholder="Paste your valid Pexels API Key here..."
               value={inputKey}
-              onChange={(e) => setInputKey(e.target.value)}
+              onChange={(e) => {
+                setInputKey(e.target.value);
+                if (localError) setLocalError(null);
+              }}
+              disabled={isValidating}
               autoFocus
             />
           </div>
@@ -63,6 +105,7 @@ export function ApiKeyModal({ currentKey, onSave, onRemove, onClose }: ApiKeyMod
                 type="button"
                 className="btn-icon"
                 onClick={handleRemove}
+                disabled={isValidating}
                 style={{ background: 'rgba(239, 68, 68, 0.12)', borderColor: 'rgba(239, 68, 68, 0.3)', color: '#f87171' }}
                 title="Remove saved API Key"
               >
@@ -78,6 +121,7 @@ export function ApiKeyModal({ currentKey, onSave, onRemove, onClose }: ApiKeyMod
                 type="button"
                 className="btn-icon"
                 onClick={onClose}
+                disabled={isValidating}
                 style={{ background: 'transparent' }}
               >
                 Cancel
@@ -85,11 +129,20 @@ export function ApiKeyModal({ currentKey, onSave, onRemove, onClose }: ApiKeyMod
               <button
                 type="submit"
                 className="nav-btn active"
-                style={{ border: 'none' }}
-                disabled={!inputKey.trim()}
+                style={{ border: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                disabled={!inputKey.trim() || isValidating}
               >
-                <Check size={16} />
-                <span>{currentKey ? 'Update Key' : 'Save Key'}</span>
+                {isValidating ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Validating Key...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check size={16} />
+                    <span>{currentKey ? 'Update Key' : 'Save Key'}</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
