@@ -1,4 +1,8 @@
 {
-    "name": "storybook-static",
-    "private": true
+  "name": "storybook-static",
+  "private": true,
+  "scripts": {
+    "build": "echo Done",
+    "build-storybook": "echo Done"
+  }
 }
