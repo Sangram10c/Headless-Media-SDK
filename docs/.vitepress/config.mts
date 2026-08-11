@@ -3,6 +3,7 @@ import { defineConfig } from 'vitepress';
 export default defineConfig({
   title: 'Headless Media SDK',
   description: 'Production-grade Headless Media SDK Ecosystem for Pexels API in React & React Native',
+  cleanUrls: true,
   head: [
     ['link', { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }],
     ['meta', { name: 'theme-color', content: '#8b5cf6' }],
